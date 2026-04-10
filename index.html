@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>showgirls momi install</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+    <script src="https://unpkg.com/@neodrag/vanilla@latest/dist/umd/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+  </head>
+
+  <style>
+    @font-face {
+      font-family: 'LosAngeles';
+      /* A name for your custom font */
+      src: url('public/LosAngeles_14.ttf') format('truetype');
+      /* Path(s) to font files */
+      font-weight: normal;
+      /* Optional: define font weight */
+      font-style: normal;
+      /* Optional: define font style */
+      /* Other optional properties like font-display, unicode-range, etc. */
+    }
+
+    .draggable-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+    }
+
+    #container {
+      /* pointer-events: none; */
+    }
+
+    img {
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+      /* pointer-events: none; */
+      /* Also prevents right-click */
+    }
+
+    .drag {
+      position: absolute;
+      pointer-events: auto;
+      z-index: 50;
+      background-color: #f48fb1;
+    }
+
+    img.petal {
+      image-rendering: pixelated;
+
+      width: 125px;
+      aspect-ratio: initial;
+      /* height: 100px; */
+      position: absolute;
+      background-repeat: repeat;
+      padding: 10px;
+    }
+
+    .petal:hover {
+      cursor: pointer;
+    }
+
+    #drag {
+      /* background-color: blue; */
+      z-index: 50;
+    }
+
+    body {
+      background-color: black;
+      image-rendering: pixelated;
+      background-blend-mode: lighten;
+      background-size: 200px;
+    }
+
+    body::before {
+      opacity: 30%;
+    }
+
+    html,
+    body,
+    #container {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'LosAngeles';
+      padding: 0px;
+      margin: 0px;
+    }
+
+    .window-body {
+      margin: 0px;
+    }
+
+    img {
+      width: 100%;
+    }
+
+    @keyframes expandFromCenter {
+      0% {
+        transform: scale(0);
+        transform-origin: center center;
+      }
+
+      1% {
+        transform: scale(0);
+        transform-origin: center center;
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .title-bar-text {
+      font-family: 'LosAngeles';
+      font-family: sans-serif;
+    }
+
+    .title-bar {
+      /* Paler Rose Pink Gradient */
+      background: linear-gradient(
+        180deg,
+        #ffb3d1,
+        #f48fb1 8%,
+        #f06292 40%,
+        #ec407a 88%,
+        #ec407a 93%,
+        #e91e63 95%,
+        #c2185b 96%,
+        #c2185b
+      );
+
+      /* Complete CSS Rule with Rose Pink Theme */
+      font-family: Trebuchet MS;
+      background: linear-gradient(
+        180deg,
+        #ffb3d1,
+        #f48fb1 8%,
+        #f06292 40%,
+        #ec407a 88%,
+        #ec407a 93%,
+        #e91e63 95%,
+        #c2185b 96%,
+        #c2185b
+      );
+      padding: 3px 5px 3px 3px;
+      border-top: 1px solid #d81b60;
+      border-left: 1px solid #d81b60;
+      border-right: 1px solid #ad1457;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 7px;
+      font-size: 13px;
+      text-shadow: 1px 1px #b71c1c;
+      height: 21px;
+    }
+
+    .window {
+      animation: expandFromCenter 0.15s ease-out;
+      box-shadow:
+        inset -1px -1px #880e4f,
+        inset 1px 1px #d81b60,
+        inset -2px -2px #ad1457,
+        inset 2px 2px #f48fb1,
+        inset -3px -3px #c2185b,
+        inset 3px 3px #e91e63;
+    }
+  </style>
+
+  <body>
+    <div id="container"></div>
+
+    <script type="module">
+      function getRandomNonRepeatingElements(arr, n) {
+        // 1. Create a copy of the array
+        const shuffledArray = [...arr];
+
+        // 2. Shuffle the copied array using Fisher-Yates (Knuth) shuffle algorithm
+        for (let i = shuffledArray.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledArray[i], shuffledArray[j]] = [
+            shuffledArray[j],
+            shuffledArray[i],
+          ]; // Swap elements
+        }
+
+        // 3. Extract the first n elements
+        return shuffledArray.slice(0, n);
+      }
+
+      let zIndex = 1000000;
+      let lowestZindex = 1000000;
+
+      // const dragInstances = new NeoDrag.Draggable(document.querySelectorAll('.drag'));
+      // console.log('draggy', dragInstance);
+      function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min); // Ensure min is an integer
+        max = Math.floor(max); // Ensure max is an integer
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      // a 1-11 b 1-10 c 1-8
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      let falling = true;
+
+      TweenLite.set('#container', { perspective: 1000 });
+      TweenLite.set('img', { xPercent: '-50%', yPercent: '-50%' });
+
+      var total = 100;
+      var container = document.getElementById('container'),
+        w = window.innerWidth,
+        h = window.innerHeight;
+
+      for (let i = 0; i < 12; i++) {
+        var Div = document.createElement('img');
+        Div.src = `public/leaflets/2.png`;
+        Div.onclick = () => console.log('pop');
+        Div.style.zIndex = '69';
+        Div.style.opacity = `${75 + getRandomInt(25)}%`;
+        // Div.style.zIndex = `${getRandomIntInclusive(800000, 1200000)}`;
+        TweenLite.set(Div, {
+          attr: { class: 'petal' },
+          x: R(0, w),
+          y: R(-200, -150),
+          z: R(-200, 200),
+        });
+        container.appendChild(Div);
+        animm(Div);
+      }
+
+      function animm(elm) {
+        const tweens = [
+          TweenMax.to(elm, R(6, 15), {
+            y: h + 100,
+            ease: Linear.easeNone,
+            repeat: -1,
+            delay: 0,
+          }),
+          TweenMax.to(elm, R(4, 8), {
+            x: '+=100',
+            rotationZ: R(0, 60),
+            repeat: -1,
+            yoyo: true,
+            ease: Sine.easeInOut,
+          }),
+          TweenMax.to(elm, R(2, 8), {
+            rotationX: R(0, 180),
+            rotationY: R(0, 90),
+            repeat: -1,
+            yoyo: true,
+            ease: Sine.easeInOut,
+            delay: -5,
+          }),
+        ];
+
+        elm.addEventListener('mouseenter', () => {
+          tweens.forEach((t) => t.pause());
+          elm.style.outline = '2px solid #4AF626';
+        });
+
+        elm.addEventListener('mouseleave', () => {
+          tweens.forEach((t) => t.resume());
+          elm.style.outline = 'none';
+        });
+      }
+      function R(min, max) {
+        return min + Math.random() * (max - min);
+      }
+    </script>
+    test
+  </body>
+</html>
