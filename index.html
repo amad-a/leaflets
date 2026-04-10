@@ -25,32 +25,11 @@
       /* Other optional properties like font-display, unicode-range, etc. */
     }
 
-    .draggable-container {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      z-index: 50;
-    }
-
-    #container {
-      /* pointer-events: none; */
-    }
-
     img {
       -webkit-user-drag: none;
       -khtml-user-drag: none;
       -moz-user-drag: none;
       -o-user-drag: none;
-      user-drag: none;
-      /* pointer-events: none; */
-      /* Also prevents right-click */
-    }
-
-    .drag {
-      position: absolute;
-      pointer-events: auto;
-      z-index: 50;
-      background-color: #f48fb1;
     }
 
     img.petal {
@@ -68,20 +47,11 @@
       cursor: pointer;
     }
 
-    #drag {
-      /* background-color: blue; */
-      z-index: 50;
-    }
-
     body {
       background-color: black;
       image-rendering: pixelated;
       background-blend-mode: lighten;
       background-size: 200px;
-    }
-
-    body::before {
-      opacity: 30%;
     }
 
     html,
@@ -90,93 +60,8 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: 'LosAngeles';
       padding: 0px;
       margin: 0px;
-    }
-
-    .window-body {
-      margin: 0px;
-    }
-
-    img {
-      width: 100%;
-    }
-
-    @keyframes expandFromCenter {
-      0% {
-        transform: scale(0);
-        transform-origin: center center;
-      }
-
-      1% {
-        transform: scale(0);
-        transform-origin: center center;
-        opacity: 1;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .title-bar-text {
-      font-family: 'LosAngeles';
-      font-family: sans-serif;
-    }
-
-    .title-bar {
-      /* Paler Rose Pink Gradient */
-      background: linear-gradient(
-        180deg,
-        #ffb3d1,
-        #f48fb1 8%,
-        #f06292 40%,
-        #ec407a 88%,
-        #ec407a 93%,
-        #e91e63 95%,
-        #c2185b 96%,
-        #c2185b
-      );
-
-      /* Complete CSS Rule with Rose Pink Theme */
-      font-family: Trebuchet MS;
-      background: linear-gradient(
-        180deg,
-        #ffb3d1,
-        #f48fb1 8%,
-        #f06292 40%,
-        #ec407a 88%,
-        #ec407a 93%,
-        #e91e63 95%,
-        #c2185b 96%,
-        #c2185b
-      );
-      padding: 3px 5px 3px 3px;
-      border-top: 1px solid #d81b60;
-      border-left: 1px solid #d81b60;
-      border-right: 1px solid #ad1457;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 7px;
-      font-size: 13px;
-      text-shadow: 1px 1px #b71c1c;
-      height: 21px;
-    }
-
-    .window {
-      animation: expandFromCenter 0.15s ease-out;
-      box-shadow:
-        inset -1px -1px #880e4f,
-        inset 1px 1px #d81b60,
-        inset -2px -2px #ad1457,
-        inset 2px 2px #f48fb1,
-        inset -3px -3px #c2185b,
-        inset 3px 3px #e91e63;
     }
   </style>
 
@@ -230,7 +115,7 @@
         w = window.innerWidth,
         h = window.innerHeight;
 
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 3; i++) {
         var Div = document.createElement('img');
         Div.src = `public/leaflets/2.png`;
         Div.onclick = () => console.log('pop');
