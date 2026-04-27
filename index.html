@@ -8,19 +8,25 @@
     />
     <title>KHAJISTAN O.W.I.</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
-    <script src="https://unpkg.com/@neodrag/vanilla@latest/dist/umd/index.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+    <script defer type="module" src="./leaflets.js"></script>
+    <!-- <link rel="stylesheet" href="https://unpkg.com/xp.css" /> -->
   </head>
 
   <style>
+    body {
+      font-family: 'VGA';
+      color: #00a606;
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+      user-select: none; /* Standard syntax (Chrome, Firefox, Opera) */
+    }
+
     @font-face {
-      font-family: 'LosAngeles';
+      font-family: 'VGA';
       /* A name for your custom font */
-      src: url('public/LosAngeles_14.ttf') format('truetype');
+      src: url('public/fonts/Web437_IBM_VGA_8x16.woff') format('woff');
       /* Path(s) to font files */
-      font-weight: normal;
-      /* Optional: define font weight */
-      font-style: normal;
+
       /* Optional: define font style */
       /* Other optional properties like font-display, unicode-range, etc. */
     }
@@ -44,7 +50,7 @@
     }
 
     .petal:hover {
-      cursor: pointer;
+      cursor: crosshair;
     }
 
     body {
@@ -63,12 +69,307 @@
       padding: 0px;
       margin: 0px;
     }
+
+    /* Tooltip text */
+    .tooltiptext {
+      visibility: hidden;
+      /* Hidden by default */
+      width: 130px;
+      background-color: black;
+      color: #ffffff;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+      position: relative;
+      z-index: 1;
+      /* Ensure tooltip is displayed above content */
+    }
+
+    .hover-text-container {
+      pointer-events: none;
+      visibility: hidden;
+
+      z-index: 999999998;
+      /* margin-top: 50px; */
+      -webkit-font-smoothing: none;
+      font-family: 'VGA';
+      font-weight: normal;
+      color: #00a606;
+      position: absolute;
+      display: flex;
+      width: 100%;
+      font-size: 45px;
+      justify-content: center;
+      align-items: center;
+      zoom: 0.65;
+      height: 100%;
+      /* Optional: define font weight */
+      /* font-style: normal; */
+    }
+
+    .hover-text {
+      background-color: black;
+
+      border: 3px solid #00a606;
+      padding: 20px 28px;
+    }
+
+    /* Show the tooltip text on hover */
+    .img-container:hover .tooltiptext {
+      visibility: visible;
+    }
+
+    #leaflet-input {
+      position: fixed;
+      z-index: 999999999;
+      background-color: black;
+      border: 2px solid #00a606;
+      color: #00a606;
+      bottom: 20px;
+      left: calc(50% - 100px);
+      width: 200px;
+      font-size: 24px;
+      padding: 10px 10px;
+      height: fit-content;
+      font-family: 'VGA';
+    }
+
+    #leaflet-input::selection {
+      background-color: #00a606;
+      color: black;
+    }
+
+    .dialog-container {
+      top: 0;
+      position: absolute;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      background-color: black;
+      /* opacity: 75%; */
+      z-index: 9999999999;
+      align-items: center;
+      justify-content: center;
+      background-color: rgb(0, 0, 0, 0.75);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes expandFromCenter {
+      0% {
+        transform: scale(0);
+        transform-origin: center center;
+      }
+
+      1% {
+        transform: scale(0);
+        transform-origin: center center;
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .leaflet-dialog {
+      height: calc(100vh - 80px);
+      width: calc(100vw - 80px);
+      border: 2px solid #00a606;
+      background-color: black;
+      animation: expandFromCenter 0.25s ease-out;
+      display: flex;
+      align-items: top;
+      justify-content: flex-start;
+      /* padding: 30px; */
+      flex-direction: column;
+    }
+
+    .leaflet-image-full {
+      max-width: -webkit-fill-available;
+    }
+
+    .dialog-header {
+      border-bottom: 2px solid #00a606;
+      color: #00a606;
+      padding: 5px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .dialog-img-container {
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      height: 33%;
+    }
+
+    .metadata-container {
+      display: flex;
+      border-top: 2px solid #00a606;
+      overflow-x: hidden;
+      font-size: 20px;
+      height: -webkit-fill-available;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: scroll;
+      padding: 15px;
+      gap: 15px;
+    }
+
+    ::-webkit-scrollbar {
+      -webkit-appearance: none;
+      width: 4px;
+    }
+
+    /* The draggable part */
+    ::-webkit-scrollbar-thumb {
+      background-color: #00a606;
+      border-radius: 0px;
+    }
+
+    /* The background track */
+    ::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #00a606;
+      opacity: 0.5;
+      /* font-style: italic; */
+    }
+
+    .meta-title {
+      font-style: italic;
+      opacity: 0.75;
+    }
+
+    .meta.short {
+      border-right: 2px solid #00a606;
+    }
   </style>
 
   <body>
+    <input
+      placeholder="Enter Leaflet #"
+      type="text"
+      oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+      id="leaflet-input"
+      autocomplete="one-time-code"
+      autofocus
+    />
+    <div class="hover-text-container">
+      <div class="hover-text">Click leaflet to view.</div>
+    </div>
     <div id="container"></div>
+    <div class="dialog-container hidden">
+      <div class="leaflet-dialog">
+        <div class="dialog-header"></div>
+        <div class="dialog-img-container">
+          <img class="leaflet-image-full" />
+        </div>
+        <div class="metadata-container">
+          <div class="meta short">
+            <div id="operation">
+              <span class="meta-title">Operation:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="conflict">
+              <span class="meta-title">Conflict:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="year">
+              <span class="meta-title">Year:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="country-theater">
+              <span class="meta-title">Country/Theater:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="languages">
+              <span class="meta-title">Languages:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="message-type">
+              <span class="meta-title">Message Type:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="target-audience">
+              <span class="meta-title">Target Audience:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="call-to-action">
+              <span class="meta-title">Call to Action:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="key-figures-symbols">
+              <span class="meta-title">Key Figures Symbols:</span>
+              <span class="meta-content"></span>
+            </div>
+          </div>
+          <div class="meta long">
+            <div id="translation">
+              <span class="meta-title">Translation:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="objective">
+              <span class="meta-title">Objective:</span>
+              <span class="meta-content"></span>
+            </div>
+            <div id="imagery">
+              <span class="meta-title">Imagery:</span>
+              <span class="meta-content"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script type="module">
+      import leaflets from './leaflets.js';
+      console.log('leaflets', leaflets);
+      let inputNum = '';
+      let curLeaflet;
+
+      const dialogContainer = document.querySelector(
+        '.dialog-container',
+      );
+
+      const leafletImageFull = document.querySelector(
+        '.leaflet-image-full',
+      );
+
+      leafletImageFull.addEventListener('load', function () {
+        this.naturalHeight > this.naturalWidth
+          ? console.log('tall')
+          : console.log('wide');
+      });
+
+      dialogContainer.addEventListener('click', (event) => {
+        // Only execute if the clicked element is the parent itself
+        if (event.target === event.currentTarget) {
+          dialogContainer.classList.add('hidden');
+        }
+      });
+
+      document
+        .getElementById('leaflet-input')
+        .addEventListener('input', (e) => {
+          inputNum = e.target.value;
+        });
+
       function getRandomNonRepeatingElements(arr, n) {
         // 1. Create a copy of the array
         const shuffledArray = [...arr];
@@ -101,36 +402,166 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
       }
 
-      // a 1-11 b 1-10 c 1-8
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-
-      let falling = true;
 
       TweenLite.set('#container', { perspective: 1000 });
       TweenLite.set('img', { xPercent: '-50%', yPercent: '-50%' });
 
-      var total = 100;
-      var container = document.getElementById('container'),
+      let total = 100;
+      let container = document.getElementById('container'),
         w = window.innerWidth,
         h = window.innerHeight;
 
-      for (let i = 0; i < 3; i++) {
-        var Div = document.createElement('img');
-        Div.src = `public/leaflets/2.png`;
-        Div.onclick = () => console.log('pop');
-        Div.style.zIndex = '69';
-        Div.style.opacity = `${75 + getRandomInt(25)}%`;
-        // Div.style.zIndex = `${getRandomIntInclusive(800000, 1200000)}`;
-        TweenLite.set(Div, {
+      let leafletLabels = [
+        '4',
+        '6',
+        '14',
+        '30',
+        '32',
+        '40',
+        '71',
+        '93',
+        '115',
+        '123',
+        '124',
+        '136',
+        '139',
+        '140',
+        '145',
+        '155',
+        '160',
+        '165',
+        '168',
+        '173',
+        '177',
+        '181',
+        '189',
+        '194',
+        '201',
+        '212',
+        '220',
+        '257',
+        '258',
+        '265',
+        '282',
+        '286',
+        '292',
+        '305',
+        '308',
+      ];
+
+      for (let i = 0; i < 6; i++) {
+        let img = document.createElement('img');
+        img.id = i;
+        img.classList.add('leafy');
+        let imgContainer = document.createElement('div');
+
+        let randomLeaflet = `public/leaflets/leaflets-sm/dithered/${leafletLabels[Math.floor(Math.random() * leafletLabels.length)]}.png`;
+
+        let tooltip = document.createElement('span');
+
+        imgContainer.className = 'img-container';
+        img.src = randomLeaflet;
+        // img.style
+        img.onclick = (e) => {
+          curLeaflet = leaflets.find(
+            (leaflet) =>
+              leaflet['catalog-number'] ===
+              e.target.dataset.leafletId,
+          );
+
+          // metas.forEach((meta) => meta.scrollTop(0));
+
+          const metaContainer = document.querySelector('.meta.short');
+
+          // metaContainer.appendChild(`
+          // <div><span class="title">Operation: </span>
+          // ${curLeaflet['operation']}</div>`);
+
+          document
+            .querySelector('#operation > .meta-content').innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
+          document
+            .querySelector('#conflict > .meta-content').innerHTML =(' ' + curLeaflet['conflict'] || 'N/A');
+          document
+            .querySelector('#year > .meta-content').innerHTML = (' ' + curLeaflet['year'] || 'N/A');
+          document
+            .querySelector('#country-theater > .meta-content').innerHTML = (' ' + curLeaflet['country-theater'] || 'N/A');
+          document
+            .querySelector('#languages > .meta-content').innerHTML = (' ' + curLeaflet['languages'] || 'N/A');
+          document
+            .querySelector('#message-type > .meta-content').innerHTML = (' ' + curLeaflet['message-type'] || 'N/A');
+          document
+            .querySelector('#target-audience > .meta-content').innerHTML = (' ' + curLeaflet['target-audience'] || 'N/A');
+          document
+            .querySelector('#call-to-action > .meta-content').innerHTML = (' ' + curLeaflet['call-to-action'] || 'N/A');
+          document
+            .querySelector('#key-figures-symbols > .meta-content').innerHTML = (' ' + curLeaflet['key-figures-symbols'] || 'N/A');
+          document
+            .querySelector('#translation > .meta-content').innerHTML = (' ' + curLeaflet['translation'] || 'N/A');
+          document
+            .querySelector('#objective > .meta-content').innerHTML = (' ' + curLeaflet['objective'] || 'N/A');
+          document
+            .querySelector('#imagery > .meta-content').innerHTML = (' ' + curLeaflet['imagery'] || 'N/A');
+
+          document.querySelector('.dialog-header').innerHTML =
+            'Leaflet ' + curLeaflet['catalog-number'];
+
+          document
+            .querySelector('.dialog-container')
+            .classList.remove('hidden');
+
+          const metas = document.querySelectorAll('.meta');
+          console.log('🚀 ~ metas:', metas);
+          for (let meta of metas) {
+            console.log('me', meta);
+            meta.scrollTo({ top: 0 });
+          }
+        };
+        img.style.zIndex = '69';
+        img.style.width = '250px';
+        // img.style.opacity = `${85 + getRandomInt(15)}%`;
+        // img.style.opacity = `100`;
+        // img.style.opacity = '.10';
+        TweenLite.set(img, {
           attr: { class: 'petal' },
           x: R(0, w),
-          y: R(-200, -150),
+          y: R(-500, -450),
           z: R(-200, 200),
         });
-        container.appendChild(Div);
-        animm(Div);
+
+        imgContainer.appendChild(img);
+
+        container.appendChild(imgContainer);
+        animm(img);
       }
+
+      const imgContainers = document.querySelectorAll('.petal');
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+              if (leafletLabels.includes(inputNum)) {
+                entry.target.src = `public/leaflets/leaflets-sm/dithered/${inputNum}.png`;
+                entry.target.dataset.leafletId = inputNum;
+              } else {
+                const randomLeafletId =
+                  leafletLabels[
+                    Math.floor(Math.random() * leafletLabels.length)
+                  ];
+                entry.target.src = `public/leaflets/leaflets-sm/dithered/${randomLeafletId}.png`;
+                entry.target.dataset.leafletId = randomLeafletId;
+              }
+            }
+          });
+        },
+        { threshold: 0 },
+      );
+
+      imgContainers.forEach((img) => {
+        observer.observe(img);
+      });
 
       function animm(elm) {
         const tweens = [
@@ -159,18 +590,25 @@
 
         elm.addEventListener('mouseenter', () => {
           tweens.forEach((t) => t.pause());
-          elm.style.outline = '2px solid #4AF626';
+          elm.style.outline = '3px solid #00a606';
+          document.querySelector(
+            '.hover-text-container',
+          ).style.visibility = 'visible';
+          document.querySelector('.leaflet-image-full').src =
+            `public/leaflets/leaflets-lg/${elm.dataset.leafletId}.png`;
         });
 
         elm.addEventListener('mouseleave', () => {
           tweens.forEach((t) => t.resume());
           elm.style.outline = 'none';
+          document.querySelector(
+            '.hover-text-container',
+          ).style.visibility = 'hidden';
         });
       }
       function R(min, max) {
         return min + Math.random() * (max - min);
       }
     </script>
-    test
   </body>
 </html>
