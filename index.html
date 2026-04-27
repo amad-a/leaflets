@@ -126,12 +126,14 @@
       border: 2px solid #00a606;
       color: #00a606;
       bottom: 20px;
-      left: calc(50% - 100px);
       width: 200px;
       font-size: 24px;
       padding: 10px 10px;
       height: fit-content;
       font-family: 'VGA';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
     #leaflet-input::selection {
@@ -479,30 +481,42 @@
           // <div><span class="title">Operation: </span>
           // ${curLeaflet['operation']}</div>`);
 
-          document
-            .querySelector('#operation > .meta-content').innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
-          document
-            .querySelector('#conflict > .meta-content').innerHTML =(' ' + curLeaflet['conflict'] || 'N/A');
-          document
-            .querySelector('#year > .meta-content').innerHTML = (' ' + curLeaflet['year'] || 'N/A');
-          document
-            .querySelector('#country-theater > .meta-content').innerHTML = (' ' + curLeaflet['country-theater'] || 'N/A');
-          document
-            .querySelector('#languages > .meta-content').innerHTML = (' ' + curLeaflet['languages'] || 'N/A');
-          document
-            .querySelector('#message-type > .meta-content').innerHTML = (' ' + curLeaflet['message-type'] || 'N/A');
-          document
-            .querySelector('#target-audience > .meta-content').innerHTML = (' ' + curLeaflet['target-audience'] || 'N/A');
-          document
-            .querySelector('#call-to-action > .meta-content').innerHTML = (' ' + curLeaflet['call-to-action'] || 'N/A');
-          document
-            .querySelector('#key-figures-symbols > .meta-content').innerHTML = (' ' + curLeaflet['key-figures-symbols'] || 'N/A');
-          document
-            .querySelector('#translation > .meta-content').innerHTML = (' ' + curLeaflet['translation'] || 'N/A');
-          document
-            .querySelector('#objective > .meta-content').innerHTML = (' ' + curLeaflet['objective'] || 'N/A');
-          document
-            .querySelector('#imagery > .meta-content').innerHTML = (' ' + curLeaflet['imagery'] || 'N/A');
+          document.querySelector(
+            '#operation > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
+          document.querySelector(
+            '#conflict > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['conflict'] || 'N/A';
+          document.querySelector('#year > .meta-content').innerHTML =
+            ' ' + curLeaflet['year'] || 'N/A';
+          document.querySelector(
+            '#country-theater > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['country-theater'] || 'N/A';
+          document.querySelector(
+            '#languages > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['languages'] || 'N/A';
+          document.querySelector(
+            '#message-type > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['message-type'] || 'N/A';
+          document.querySelector(
+            '#target-audience > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['target-audience'] || 'N/A';
+          document.querySelector(
+            '#call-to-action > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['call-to-action'] || 'N/A';
+          document.querySelector(
+            '#key-figures-symbols > .meta-content',
+          ).innerHTML =
+            ' ' + curLeaflet['key-figures-symbols'] || 'N/A';
+          document.querySelector(
+            '#translation > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['translation'] || 'N/A';
+          document.querySelector(
+            '#objective > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['objective'] || 'N/A';
+          document.querySelector(
+            '#imagery > .meta-content',
+          ).innerHTML = ' ' + curLeaflet['imagery'] || 'N/A';
 
           document.querySelector('.dialog-header').innerHTML =
             'Leaflet ' + curLeaflet['catalog-number'];
