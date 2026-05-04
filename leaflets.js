@@ -214,7 +214,7 @@ const leaflets = [
     'year': '2003-2011',
     'country-theater': 'Iraq',
     'languages': ['Arabic'],
-    'translation': 'This is what the leaflets say: "You will be destroyed if you target coalition aircraft."',
+    'translation': 'You will be destroyed if you target coalition aircraft.',
     'objective': 'The leaflet warns that any attempt to target coalition aircraft will result in destruction. It is a direct threat to discourage attacks on coalition forces.',
     'imagery': 'Two men standing in front of a tank with leaflets raining down, with planes flying overhead.',
     'message-type': 'Air-defense deterrence',

@@ -7,9 +7,8 @@
       content="width=device-width, initial-scale=1.0"
     />
     <title>KHAJISTAN O.W.I.</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+    <script src="./gsap.min.js"></script>
     <script defer type="module" src="./leaflets.js"></script>
-    <!-- <link rel="stylesheet" href="https://unpkg.com/xp.css" /> -->
   </head>
 
   <style>
@@ -19,45 +18,9 @@
       -webkit-user-select: none; /* Safari */
       -ms-user-select: none; /* Internet Explorer/Edge */
       user-select: none; /* Standard syntax (Chrome, Firefox, Opera) */
-    }
-
-    @font-face {
-      font-family: 'VGA';
-      /* A name for your custom font */
-      src: url('public/fonts/Web437_IBM_VGA_8x16.woff') format('woff');
-      /* Path(s) to font files */
-
-      /* Optional: define font style */
-      /* Other optional properties like font-display, unicode-range, etc. */
-    }
-
-    img {
-      -webkit-user-drag: none;
-      -khtml-user-drag: none;
-      -moz-user-drag: none;
-      -o-user-drag: none;
-    }
-
-    img.petal {
-      image-rendering: pixelated;
-
-      width: 125px;
-      aspect-ratio: initial;
-      /* height: 100px; */
-      position: absolute;
-      background-repeat: repeat;
-      padding: 10px;
-    }
-
-    .petal:hover {
-      cursor: crosshair;
-    }
-
-    body {
       background-color: black;
       image-rendering: pixelated;
       background-blend-mode: lighten;
-      background-size: 200px;
     }
 
     html,
@@ -68,6 +31,32 @@
       overflow: hidden;
       padding: 0px;
       margin: 0px;
+    }
+
+    @font-face {
+      font-family: 'VGA';
+      src: url('public/fonts/Web437_IBM_VGA_8x16.woff') format('woff');
+    }
+
+    img {
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+    }
+
+    img.leaf {
+      image-rendering: pixelated;
+      width: 125px;
+      aspect-ratio: initial;
+      /* height: 100px; */
+      position: absolute;
+      background-repeat: repeat;
+      padding: 10px;
+    }
+
+    .leaf:hover {
+      cursor: crosshair;
     }
 
     /* Tooltip text */
@@ -119,12 +108,12 @@
       visibility: visible;
     }
 
-    #leaflet-input {
-      position: fixed;
-      z-index: 999999999;
-      background-color: black;
-      border: 2px solid #00a606;
-      color: #00a606;
+    .leaflet-input {
+      all: unset;
+      width: 100%;
+    }
+
+    .input-holder {
       bottom: 20px;
       width: 200px;
       font-size: 24px;
@@ -134,10 +123,26 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
+      position: fixed;
+      z-index: 999999999;
+      background-color: black;
+      border: 2px solid #00a606;
+      color: #00a606;
+      display: flex;
+      gap: 6px;
     }
 
-    #leaflet-input::selection {
+    .leaflet-input::selection {
       background-color: #00a606;
+      color: black;
+    }
+
+    .input-not-found {
+      color: #d30000;
+    }
+
+    .input-not-found::selection {
+      background-color: #d30000;
       color: black;
     }
 
@@ -182,7 +187,7 @@
       width: calc(100vw - 80px);
       border: 2px solid #00a606;
       background-color: black;
-      animation: expandFromCenter 0.25s ease-out;
+      animation: fadeIn 0.2s ease-in-out forwards;
       display: flex;
       align-items: top;
       justify-content: flex-start;
@@ -197,9 +202,27 @@
     .dialog-header {
       border-bottom: 2px solid #00a606;
       color: #00a606;
-      padding: 5px;
+      /* padding: 5px; */
       text-align: center;
       font-size: 24px;
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 4px 4px 5px;
+    }
+
+    .dialog-header-title {
+      width: 100%;
+      padding-left: 20px;
+    }
+
+    .dialog-header-x {
+      margin-left: auto;
+      padding: 0px 4px;
+    }
+
+    .dialog-header-x:hover {
+      cursor: pointer;
+      opacity: 0.5;
     }
 
     .dialog-img-container {
@@ -224,6 +247,7 @@
       overflow-y: scroll;
       padding: 15px;
       gap: 15px;
+      overscroll-behavior: none;
     }
 
     ::-webkit-scrollbar {
@@ -261,24 +285,43 @@
     .meta.short {
       border-right: 2px solid #00a606;
     }
+
+    /* 1. Define the animation steps */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
   </style>
 
   <body>
-    <input
-      placeholder="Enter Leaflet #"
-      type="text"
-      oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-      id="leaflet-input"
-      autocomplete="one-time-code"
-      autofocus
-    />
+    <div class="input-holder">
+      <div>></div>
+      <input
+        id="input"
+        placeholder="Enter Leaflet #"
+        type="text"
+        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+        maxlength="3"
+        class="leaflet-input"
+        autocomplete="one-time-code"
+        autofocus
+      />
+    </div>
+
     <div class="hover-text-container">
       <div class="hover-text">Click leaflet to view.</div>
     </div>
     <div id="container"></div>
     <div class="dialog-container hidden">
       <div class="leaflet-dialog">
-        <div class="dialog-header"></div>
+        <div class="dialog-header">
+          <div class="dialog-header-title"></div>
+          <div class="dialog-header-x">X</div>
+        </div>
         <div class="dialog-img-container">
           <img class="leaflet-image-full" />
         </div>
@@ -341,7 +384,6 @@
 
     <script type="module">
       import leaflets from './leaflets.js';
-      console.log('leaflets', leaflets);
       let inputNum = '';
       let curLeaflet;
 
@@ -352,6 +394,12 @@
       const leafletImageFull = document.querySelector(
         '.leaflet-image-full',
       );
+
+      const leafletX = document.querySelector('.dialog-header-x');
+
+      leafletX.addEventListener('pointerdown', (event) => {
+        dialogContainer.classList.add('hidden');
+      });
 
       leafletImageFull.addEventListener('load', function () {
         this.naturalHeight > this.naturalWidth
@@ -367,9 +415,18 @@
       });
 
       document
-        .getElementById('leaflet-input')
+        .querySelector('.leaflet-input')
         .addEventListener('input', (e) => {
           inputNum = e.target.value;
+          if (leafletLabels.includes(inputNum) || inputNum === '') {
+            document
+              .querySelector('.leaflet-input')
+              .classList.remove('input-not-found');
+          } else {
+            document
+              .querySelector('.leaflet-input')
+              .classList.add('input-not-found');
+          }
         });
 
       function getRandomNonRepeatingElements(arr, n) {
@@ -473,13 +530,7 @@
               e.target.dataset.leafletId,
           );
 
-          // metas.forEach((meta) => meta.scrollTop(0));
-
           const metaContainer = document.querySelector('.meta.short');
-
-          // metaContainer.appendChild(`
-          // <div><span class="title">Operation: </span>
-          // ${curLeaflet['operation']}</div>`);
 
           document.querySelector(
             '#operation > .meta-content',
@@ -494,7 +545,8 @@
           ).innerHTML = ' ' + curLeaflet['country-theater'] || 'N/A';
           document.querySelector(
             '#languages > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['languages'] || 'N/A';
+          ).innerHTML =
+            ' ' + curLeaflet['languages'].join(', ') || 'N/A';
           document.querySelector(
             '#message-type > .meta-content',
           ).innerHTML = ' ' + curLeaflet['message-type'] || 'N/A';
@@ -507,7 +559,8 @@
           document.querySelector(
             '#key-figures-symbols > .meta-content',
           ).innerHTML =
-            ' ' + curLeaflet['key-figures-symbols'] || 'N/A';
+            ' ' + curLeaflet['key-figures-symbols'].join(', ') ||
+            'N/A';
           document.querySelector(
             '#translation > .meta-content',
           ).innerHTML = ' ' + curLeaflet['translation'] || 'N/A';
@@ -518,7 +571,7 @@
             '#imagery > .meta-content',
           ).innerHTML = ' ' + curLeaflet['imagery'] || 'N/A';
 
-          document.querySelector('.dialog-header').innerHTML =
+          document.querySelector('.dialog-header-title').innerHTML =
             'Leaflet ' + curLeaflet['catalog-number'];
 
           document
@@ -526,9 +579,8 @@
             .classList.remove('hidden');
 
           const metas = document.querySelectorAll('.meta');
-          console.log('🚀 ~ metas:', metas);
+
           for (let meta of metas) {
-            console.log('me', meta);
             meta.scrollTo({ top: 0 });
           }
         };
@@ -538,7 +590,7 @@
         // img.style.opacity = `100`;
         // img.style.opacity = '.10';
         TweenLite.set(img, {
-          attr: { class: 'petal' },
+          attr: { class: 'leaf' },
           x: R(0, w),
           y: R(-500, -450),
           z: R(-200, 200),
@@ -550,7 +602,7 @@
         animm(img);
       }
 
-      const imgContainers = document.querySelectorAll('.petal');
+      const imgContainers = document.querySelectorAll('.leaf');
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -602,14 +654,18 @@
           }),
         ];
 
-        elm.addEventListener('mouseenter', () => {
-          tweens.forEach((t) => t.pause());
-          elm.style.outline = '3px solid #00a606';
-          document.querySelector(
-            '.hover-text-container',
-          ).style.visibility = 'visible';
-          document.querySelector('.leaflet-image-full').src =
-            `public/leaflets/leaflets-lg/${elm.dataset.leafletId}.png`;
+        const hoverTextContainer = document.querySelector(
+          '.hover-text-container',
+        );
+
+        elm.addEventListener('mousemove', () => {
+          if (hoverTextContainer.style.visibility !== 'visible') {
+            tweens.forEach((t) => t.pause());
+            elm.style.outline = '3px solid #00a606';
+            hoverTextContainer.style.visibility = 'visible';
+            document.querySelector('.leaflet-image-full').src =
+              `public/leaflets/leaflets-lg/${elm.dataset.leafletId}.jpeg`;
+          }
         });
 
         elm.addEventListener('mouseleave', () => {
@@ -623,6 +679,26 @@
       function R(min, max) {
         return min + Math.random() * (max - min);
       }
+
+      let timerID = null;
+      let timeoutDuration = 600000; // 10 minute
+
+      window.addEventListener(
+        'keydown',
+        function (e) {
+          if (timerID !== null) {
+            clearTimeout(timerID);
+            timerID = null;
+          }
+
+          timerID = setTimeout(function () {
+            // Clear all the fields here
+            document.getElementById('input').value = '';
+            inputNum = '';
+          }, timeoutDuration);
+        },
+        false,
+      );
     </script>
   </body>
 </html>
