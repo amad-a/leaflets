@@ -399,6 +399,8 @@
 
       leafletX.addEventListener('pointerdown', (event) => {
         dialogContainer.classList.add('hidden');
+        document.getElementById('input').value = '';
+        curLeaflet = '';
       });
 
       leafletImageFull.addEventListener('load', function () {
@@ -422,12 +424,83 @@
             document
               .querySelector('.leaflet-input')
               .classList.remove('input-not-found');
+
+            if (leafletLabels.includes(inputNum)) {
+              setCurLeaflet(inputNum);
+              setLeafletData();
+              document
+                .querySelector('.dialog-container')
+                .classList.remove('hidden');
+            }
           } else {
             document
               .querySelector('.leaflet-input')
               .classList.add('input-not-found');
           }
         });
+
+      function setLeafletImg() {}
+
+      function setCurLeaflet(id) {
+        curLeaflet = leaflets.find(
+          (leaflet) => leaflet['catalog-number'] === id,
+        );
+
+        document.querySelector('.leaflet-image-full').src =
+          `public/leaflets/leaflets-lg/${id}.jpeg`;
+      }
+
+      function setLeafletData() {
+        document.querySelector(
+          '#operation > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
+        document.querySelector(
+          '#conflict > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['conflict'] || 'N/A';
+        document.querySelector('#year > .meta-content').innerHTML =
+          ' ' + curLeaflet['year'] || 'N/A';
+        document.querySelector(
+          '#country-theater > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['country-theater'] || 'N/A';
+        document.querySelector(
+          '#languages > .meta-content',
+        ).innerHTML =
+          ' ' + curLeaflet['languages'].join(', ') || 'N/A';
+        document.querySelector(
+          '#message-type > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['message-type'] || 'N/A';
+        document.querySelector(
+          '#target-audience > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['target-audience'] || 'N/A';
+        document.querySelector(
+          '#call-to-action > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['call-to-action'] || 'N/A';
+        document.querySelector(
+          '#key-figures-symbols > .meta-content',
+        ).innerHTML =
+          ' ' + curLeaflet['key-figures-symbols'].join(', ') || 'N/A';
+        document.querySelector(
+          '#translation > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['translation'] || 'N/A';
+        document.querySelector(
+          '#objective > .meta-content',
+        ).innerHTML = ' ' + curLeaflet['objective'] || 'N/A';
+        document.querySelector('#imagery > .meta-content').innerHTML =
+          ' ' + curLeaflet['imagery'] || 'N/A';
+
+        document.querySelector('.dialog-header-title').innerHTML =
+          'Leaflet ' + curLeaflet['catalog-number'];
+
+        document
+          .querySelector('.dialog-container')
+          .classList.remove('hidden');
+
+        const metas = document.querySelectorAll('.meta');
+
+        for (let meta of metas) {
+          meta.scrollTo({ top: 0 });
+        }
+      }
 
       function getRandomNonRepeatingElements(arr, n) {
         // 1. Create a copy of the array
@@ -524,65 +597,9 @@
         img.src = randomLeaflet;
         // img.style
         img.onclick = (e) => {
-          curLeaflet = leaflets.find(
-            (leaflet) =>
-              leaflet['catalog-number'] ===
-              e.target.dataset.leafletId,
-          );
+          setCurLeaflet(e.target.dataset.leafletId);
 
-          const metaContainer = document.querySelector('.meta.short');
-
-          document.querySelector(
-            '#operation > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
-          document.querySelector(
-            '#conflict > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['conflict'] || 'N/A';
-          document.querySelector('#year > .meta-content').innerHTML =
-            ' ' + curLeaflet['year'] || 'N/A';
-          document.querySelector(
-            '#country-theater > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['country-theater'] || 'N/A';
-          document.querySelector(
-            '#languages > .meta-content',
-          ).innerHTML =
-            ' ' + curLeaflet['languages'].join(', ') || 'N/A';
-          document.querySelector(
-            '#message-type > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['message-type'] || 'N/A';
-          document.querySelector(
-            '#target-audience > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['target-audience'] || 'N/A';
-          document.querySelector(
-            '#call-to-action > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['call-to-action'] || 'N/A';
-          document.querySelector(
-            '#key-figures-symbols > .meta-content',
-          ).innerHTML =
-            ' ' + curLeaflet['key-figures-symbols'].join(', ') ||
-            'N/A';
-          document.querySelector(
-            '#translation > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['translation'] || 'N/A';
-          document.querySelector(
-            '#objective > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['objective'] || 'N/A';
-          document.querySelector(
-            '#imagery > .meta-content',
-          ).innerHTML = ' ' + curLeaflet['imagery'] || 'N/A';
-
-          document.querySelector('.dialog-header-title').innerHTML =
-            'Leaflet ' + curLeaflet['catalog-number'];
-
-          document
-            .querySelector('.dialog-container')
-            .classList.remove('hidden');
-
-          const metas = document.querySelectorAll('.meta');
-
-          for (let meta of metas) {
-            meta.scrollTo({ top: 0 });
-          }
+          setLeafletData();
         };
         img.style.zIndex = '69';
         img.style.width = '250px';
@@ -608,10 +625,13 @@
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) {
-              if (leafletLabels.includes(inputNum)) {
-                entry.target.src = `public/leaflets/leaflets-sm/dithered/${inputNum}.png`;
+              let curInputNum = document.getElementById('input').value;
+              if (leafletLabels.includes(curInputNum)) {
+                console.log("🚀 ~ inputNum:", inputNum)
+                entry.target.src = `public/leaflets/leaflets-sm/dithered/${curInputNum}.png`;
                 entry.target.dataset.leafletId = inputNum;
               } else {
+                console.log("🚀 ~ nein:")
                 const randomLeafletId =
                   leafletLabels[
                     Math.floor(Math.random() * leafletLabels.length)
@@ -660,11 +680,10 @@
 
         elm.addEventListener('mousemove', () => {
           if (hoverTextContainer.style.visibility !== 'visible') {
+            // setCurLeaflet();
             tweens.forEach((t) => t.pause());
             elm.style.outline = '3px solid #00a606';
             hoverTextContainer.style.visibility = 'visible';
-            document.querySelector('.leaflet-image-full').src =
-              `public/leaflets/leaflets-lg/${elm.dataset.leafletId}.jpeg`;
           }
         });
 
