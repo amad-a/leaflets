@@ -15,9 +15,12 @@
     body {
       font-family: 'VGA';
       color: #00a606;
-      -webkit-user-select: none; /* Safari */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-      user-select: none; /* Standard syntax (Chrome, Firefox, Opera) */
+      -webkit-user-select: none;
+      /* Safari */
+      -ms-user-select: none;
+      /* Internet Explorer/Edge */
+      user-select: none;
+      /* Standard syntax (Chrome, Firefox, Opera) */
       background-color: black;
       image-rendering: pixelated;
       background-blend-mode: lighten;
@@ -157,7 +160,7 @@
       z-index: 9999999999;
       align-items: center;
       justify-content: center;
-      background-color: rgb(0, 0, 0, 0.75);
+      background-color: rgb(0, 0, 0, 0.55);
     }
 
     .hidden {
@@ -183,8 +186,8 @@
     }
 
     .leaflet-dialog {
-      height: calc(100vh - 80px);
-      width: calc(100vw - 80px);
+      height: calc(100vh - 90px);
+      width: calc(100vw - 90px);
       border: 2px solid #00a606;
       background-color: black;
       animation: fadeIn 0.2s ease-in-out forwards;
@@ -291,6 +294,7 @@
       from {
         opacity: 0;
       }
+
       to {
         opacity: 1;
       }
@@ -413,6 +417,8 @@
         // Only execute if the clicked element is the parent itself
         if (event.target === event.currentTarget) {
           dialogContainer.classList.add('hidden');
+          document.getElementById('input').value = '';
+          curLeaflet = '';
         }
       });
 
@@ -421,9 +427,7 @@
         .addEventListener('input', (e) => {
           inputNum = e.target.value;
           if (leafletLabels.includes(inputNum) || inputNum === '') {
-            document
-              .querySelector('.leaflet-input')
-              .classList.remove('input-not-found');
+            document.querySelector('.leaflet-input');
 
             if (leafletLabels.includes(inputNum)) {
               setCurLeaflet(inputNum);
@@ -432,10 +436,6 @@
                 .querySelector('.dialog-container')
                 .classList.remove('hidden');
             }
-          } else {
-            document
-              .querySelector('.leaflet-input')
-              .classList.add('input-not-found');
           }
         });
 
@@ -448,6 +448,8 @@
 
         document.querySelector('.leaflet-image-full').src =
           `public/leaflets/leaflets-lg/${id}.jpeg`;
+
+        document.getElementById('input').value = id;
       }
 
       function setLeafletData() {
@@ -501,6 +503,10 @@
           meta.scrollTo({ top: 0 });
         }
       }
+
+      function setLeaflet(id) {}
+
+      function resetLeaflets() {}
 
       function getRandomNonRepeatingElements(arr, n) {
         // 1. Create a copy of the array
@@ -625,13 +631,14 @@
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) {
-              let curInputNum = document.getElementById('input').value;
+              let curInputNum =
+                document.getElementById('input').value;
               if (leafletLabels.includes(curInputNum)) {
-                console.log("🚀 ~ inputNum:", inputNum)
+                console.log('🚀 ~ inputNum:', inputNum);
                 entry.target.src = `public/leaflets/leaflets-sm/dithered/${curInputNum}.png`;
-                entry.target.dataset.leafletId = inputNum;
+                entry.target.dataset.leafletId = curInputNum;
               } else {
-                console.log("🚀 ~ nein:")
+                console.log('🚀 ~ nein:');
                 const randomLeafletId =
                   leafletLabels[
                     Math.floor(Math.random() * leafletLabels.length)
