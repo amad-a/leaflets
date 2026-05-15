@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KHAJISTAN O.W.I.</title>
     <script src="./gsap.min.js"></script>
     <script defer type="module" src="./leaflets.js"></script>
@@ -16,11 +13,8 @@
       font-family: 'VGA';
       color: #00a606;
       -webkit-user-select: none;
-      /* Safari */
       -ms-user-select: none;
-      /* Internet Explorer/Edge */
       user-select: none;
-      /* Standard syntax (Chrome, Firefox, Opera) */
       background-color: black;
       image-rendering: pixelated;
       background-blend-mode: lighten;
@@ -52,7 +46,6 @@
       image-rendering: pixelated;
       width: 125px;
       aspect-ratio: initial;
-      /* height: 100px; */
       position: absolute;
       background-repeat: repeat;
       padding: 10px;
@@ -62,10 +55,8 @@
       cursor: crosshair;
     }
 
-    /* Tooltip text */
     .tooltiptext {
       visibility: hidden;
-      /* Hidden by default */
       width: 130px;
       background-color: black;
       color: #ffffff;
@@ -74,15 +65,12 @@
       border-radius: 6px;
       position: relative;
       z-index: 1;
-      /* Ensure tooltip is displayed above content */
     }
 
     .hover-text-container {
       pointer-events: none;
       visibility: hidden;
-
       z-index: 999999998;
-      /* margin-top: 50px; */
       -webkit-font-smoothing: none;
       font-family: 'VGA';
       font-weight: normal;
@@ -95,18 +83,14 @@
       align-items: center;
       zoom: 0.65;
       height: 100%;
-      /* Optional: define font weight */
-      /* font-style: normal; */
     }
 
     .hover-text {
       background-color: black;
-
       border: 3px solid #00a606;
       padding: 20px 28px;
     }
 
-    /* Show the tooltip text on hover */
     .img-container:hover .tooltiptext {
       visibility: visible;
     }
@@ -123,10 +107,9 @@
       padding: 10px 10px;
       height: fit-content;
       font-family: 'VGA';
-      position: absolute;
+      position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      position: fixed;
       z-index: 999999999;
       background-color: black;
       border: 2px solid #00a606;
@@ -155,8 +138,6 @@
       height: 100vh;
       width: 100vw;
       display: flex;
-      background-color: black;
-      /* opacity: 75%; */
       z-index: 9999999999;
       align-items: center;
       justify-content: center;
@@ -167,22 +148,9 @@
       display: none;
     }
 
-    @keyframes expandFromCenter {
-      0% {
-        transform: scale(0);
-        transform-origin: center center;
-      }
-
-      1% {
-        transform: scale(0);
-        transform-origin: center center;
-        opacity: 1;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .leaflet-dialog {
@@ -194,7 +162,6 @@
       display: flex;
       align-items: top;
       justify-content: flex-start;
-      /* padding: 30px; */
       flex-direction: column;
     }
 
@@ -205,7 +172,6 @@
     .dialog-header {
       border-bottom: 2px solid #00a606;
       color: #00a606;
-      /* padding: 5px; */
       text-align: center;
       font-size: 24px;
       display: flex;
@@ -258,13 +224,11 @@
       width: 4px;
     }
 
-    /* The draggable part */
     ::-webkit-scrollbar-thumb {
       background-color: #00a606;
       border-radius: 0px;
     }
 
-    /* The background track */
     ::-webkit-scrollbar-track {
       background: #000;
     }
@@ -277,7 +241,6 @@
     input::placeholder {
       color: #00a606;
       opacity: 0.5;
-      /* font-style: italic; */
     }
 
     .meta-title {
@@ -288,17 +251,6 @@
     .meta.short {
       border-right: 2px solid #00a606;
     }
-
-    /* 1. Define the animation steps */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
   </style>
 
   <body>
@@ -308,7 +260,6 @@
         id="input"
         placeholder="Enter Leaflet #"
         type="text"
-        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
         maxlength="3"
         class="leaflet-input"
         autocomplete="one-time-code"
@@ -388,343 +339,231 @@
 
     <script type="module">
       import leaflets from './leaflets.js';
-      let inputNum = '';
-      let curLeaflet;
 
-      const dialogContainer = document.querySelector(
-        '.dialog-container',
-      );
+      // ── Constants ──────────────────────────────────────────────
+      const FALLING_LEAF_COUNT = 6;
+      const LEAF_WIDTH = '250px';
+      const IDLE_TIMEOUT_MS = 600_000; // 10 minutes
 
-      const leafletImageFull = document.querySelector(
-        '.leaflet-image-full',
-      );
+      const LEAFLET_IDS = [
+        '4', '6', '14', '30', '32', '40', '71', '93', '115', '123',
+        '124', '136', '139', '140', '145', '155', '160', '165', '168',
+        '173', '177', '181', '189', '194', '201', '212', '220', '257',
+        '258', '265', '282', '286', '292', '305', '308',
+      ];
 
-      const leafletX = document.querySelector('.dialog-header-x');
+      const METADATA_FIELDS = [
+        { id: 'operation',           key: 'operation' },
+        { id: 'conflict',            key: 'conflict' },
+        { id: 'year',                key: 'year' },
+        { id: 'country-theater',     key: 'country-theater' },
+        { id: 'languages',           key: 'languages',           isArray: true },
+        { id: 'message-type',        key: 'message-type' },
+        { id: 'target-audience',     key: 'target-audience' },
+        { id: 'call-to-action',      key: 'call-to-action' },
+        { id: 'key-figures-symbols', key: 'key-figures-symbols', isArray: true },
+        { id: 'translation',         key: 'translation' },
+        { id: 'objective',           key: 'objective' },
+        { id: 'imagery',             key: 'imagery' },
+      ];
 
-      leafletX.addEventListener('pointerdown', (event) => {
-        dialogContainer.classList.add('hidden');
-        document.getElementById('input').value = '';
-        curLeaflet = '';
+      // ── Cached DOM Elements ────────────────────────────────────
+      const dom = {
+        container:          document.getElementById('container'),
+        input:              document.getElementById('input'),
+        dialogContainer:    document.querySelector('.dialog-container'),
+        dialogTitle:        document.querySelector('.dialog-header-title'),
+        dialogClose:        document.querySelector('.dialog-header-x'),
+        dialogImage:        document.querySelector('.leaflet-image-full'),
+        hoverTextContainer: document.querySelector('.hover-text-container'),
+        metaPanels:         document.querySelectorAll('.meta'),
+      };
+
+      // ── State ──────────────────────────────────────────────────
+      let currentLeaflet = null;
+      let idleTimerId = null;
+
+      // ── Helpers ────────────────────────────────────────────────
+      function randomInRange(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function pickRandomId() {
+        return LEAFLET_IDS[Math.floor(Math.random() * LEAFLET_IDS.length)];
+      }
+
+      function thumbPath(id) {
+        return `public/leaflets/leaflets-sm/dithered/${id}.png`;
+      }
+
+      function fullPath(id) {
+        return `public/leaflets/leaflets-lg/${id}.jpeg`;
+      }
+
+      // ── Dialog ─────────────────────────────────────────────────
+      function openDialog(id) {
+        const leaflet = leaflets.find((l) => l['catalog-number'] === id);
+        if (!leaflet) return;
+
+        currentLeaflet = leaflet;
+        dom.dialogImage.src = fullPath(id);
+        dom.dialogTitle.textContent = `Leaflet ${id}`;
+
+        for (const field of METADATA_FIELDS) {
+          const el = document.querySelector(`#${field.id} > .meta-content`);
+          if (!el) continue;
+
+          const raw = leaflet[field.key];
+          const value = field.isArray
+            ? (Array.isArray(raw) ? raw.join(', ') : 'N/A')
+            : (raw || 'N/A');
+          el.textContent = ` ${value}`;
+        }
+
+        // Reset scroll positions
+        for (const panel of dom.metaPanels) {
+          panel.scrollTo({ top: 0 });
+        }
+
+        dom.dialogContainer.classList.remove('hidden');
+      }
+
+      function closeDialog() {
+        dom.dialogContainer.classList.add('hidden');
+        dom.input.value = '';
+        currentLeaflet = null;
+      }
+
+      // ── Dialog Event Listeners ─────────────────────────────────
+      dom.dialogClose.addEventListener('pointerdown', closeDialog);
+
+      dom.dialogContainer.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeDialog();
       });
 
-      leafletImageFull.addEventListener('load', function () {
-        this.naturalHeight > this.naturalWidth
-          ? console.log('tall')
-          : console.log('wide');
-      });
+      // ── Input Handling ─────────────────────────────────────────
+      dom.input.addEventListener('input', (e) => {
+        // Strip non-numeric characters
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
 
-      dialogContainer.addEventListener('click', (event) => {
-        // Only execute if the clicked element is the parent itself
-        if (event.target === event.currentTarget) {
-          dialogContainer.classList.add('hidden');
-          document.getElementById('input').value = '';
-          curLeaflet = '';
+        const value = e.target.value;
+        if (value && LEAFLET_IDS.includes(value)) {
+          openDialog(value);
         }
       });
 
-      document
-        .querySelector('.leaflet-input')
-        .addEventListener('input', (e) => {
-          inputNum = e.target.value;
-          if (leafletLabels.includes(inputNum) || inputNum === '') {
-            document.querySelector('.leaflet-input');
+      // ── Idle Timer (clears input after inactivity) ─────────────
+      window.addEventListener('keydown', () => {
+        if (idleTimerId !== null) {
+          clearTimeout(idleTimerId);
+        }
+        idleTimerId = setTimeout(() => {
+          dom.input.value = '';
+        }, IDLE_TIMEOUT_MS);
+      });
 
-            if (leafletLabels.includes(inputNum)) {
-              setCurLeaflet(inputNum);
-              setLeafletData();
-              document
-                .querySelector('.dialog-container')
-                .classList.remove('hidden');
-            }
+      // ── Falling Leaves Animation ───────────────────────────────
+      const viewW = window.innerWidth;
+      const viewH = window.innerHeight;
+
+      gsap.set('#container', { perspective: 1000 });
+      gsap.set('img', { xPercent: '-50%', yPercent: '-50%' });
+
+      function createFallingLeaf() {
+        const img = document.createElement('img');
+        img.classList.add('leaf');
+        img.src = thumbPath(pickRandomId());
+        img.style.zIndex = '69';
+        img.style.width = LEAF_WIDTH;
+
+        img.addEventListener('click', (e) => {
+          const id = e.target.dataset.leafletId;
+          if (id) openDialog(id);
+        });
+
+        gsap.set(img, {
+          attr: { class: 'leaf' },
+          x: randomInRange(0, viewW),
+          y: randomInRange(-500, -450),
+          z: randomInRange(-200, 200),
+        });
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'img-container';
+        wrapper.appendChild(img);
+        dom.container.appendChild(wrapper);
+
+        animateLeaf(img);
+        return img;
+      }
+
+      function animateLeaf(el) {
+        const tweens = [
+          gsap.to(el, {
+            y: viewH + 100,
+            ease: 'none',
+            repeat: -1,
+            delay: 0,
+            duration: randomInRange(6, 15),
+          }),
+          gsap.to(el, {
+            x: '+=100',
+            rotationZ: randomInRange(0, 60),
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            duration: randomInRange(4, 8),
+          }),
+          gsap.to(el, {
+            rotationX: randomInRange(0, 180),
+            rotationY: randomInRange(0, 90),
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            delay: -5,
+            duration: randomInRange(2, 8),
+          }),
+        ];
+
+        el.addEventListener('mousemove', () => {
+          if (dom.hoverTextContainer.style.visibility !== 'visible') {
+            tweens.forEach((t) => t.pause());
+            el.style.outline = '3px solid #00a606';
+            dom.hoverTextContainer.style.visibility = 'visible';
           }
         });
 
-      function setLeafletImg() {}
-
-      function setCurLeaflet(id) {
-        curLeaflet = leaflets.find(
-          (leaflet) => leaflet['catalog-number'] === id,
-        );
-
-        document.querySelector('.leaflet-image-full').src =
-          `public/leaflets/leaflets-lg/${id}.jpeg`;
-
-        document.getElementById('input').value = id;
-      }
-
-      function setLeafletData() {
-        document.querySelector(
-          '#operation > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['operation'] || 'N/A';
-        document.querySelector(
-          '#conflict > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['conflict'] || 'N/A';
-        document.querySelector('#year > .meta-content').innerHTML =
-          ' ' + curLeaflet['year'] || 'N/A';
-        document.querySelector(
-          '#country-theater > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['country-theater'] || 'N/A';
-        document.querySelector(
-          '#languages > .meta-content',
-        ).innerHTML =
-          ' ' + curLeaflet['languages'].join(', ') || 'N/A';
-        document.querySelector(
-          '#message-type > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['message-type'] || 'N/A';
-        document.querySelector(
-          '#target-audience > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['target-audience'] || 'N/A';
-        document.querySelector(
-          '#call-to-action > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['call-to-action'] || 'N/A';
-        document.querySelector(
-          '#key-figures-symbols > .meta-content',
-        ).innerHTML =
-          ' ' + curLeaflet['key-figures-symbols'].join(', ') || 'N/A';
-        document.querySelector(
-          '#translation > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['translation'] || 'N/A';
-        document.querySelector(
-          '#objective > .meta-content',
-        ).innerHTML = ' ' + curLeaflet['objective'] || 'N/A';
-        document.querySelector('#imagery > .meta-content').innerHTML =
-          ' ' + curLeaflet['imagery'] || 'N/A';
-
-        document.querySelector('.dialog-header-title').innerHTML =
-          'Leaflet ' + curLeaflet['catalog-number'];
-
-        document
-          .querySelector('.dialog-container')
-          .classList.remove('hidden');
-
-        const metas = document.querySelectorAll('.meta');
-
-        for (let meta of metas) {
-          meta.scrollTo({ top: 0 });
-        }
-      }
-
-      function setLeaflet(id) {}
-
-      function resetLeaflets() {}
-
-      function getRandomNonRepeatingElements(arr, n) {
-        // 1. Create a copy of the array
-        const shuffledArray = [...arr];
-
-        // 2. Shuffle the copied array using Fisher-Yates (Knuth) shuffle algorithm
-        for (let i = shuffledArray.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffledArray[i], shuffledArray[j]] = [
-            shuffledArray[j],
-            shuffledArray[i],
-          ]; // Swap elements
-        }
-
-        // 3. Extract the first n elements
-        return shuffledArray.slice(0, n);
-      }
-
-      let zIndex = 1000000;
-      let lowestZindex = 1000000;
-
-      // const dragInstances = new NeoDrag.Draggable(document.querySelectorAll('.drag'));
-      // console.log('draggy', dragInstance);
-      function getRandomInt(max) {
-        return Math.floor(Math.random() * max);
-      }
-
-      function getRandomIntInclusive(min, max) {
-        min = Math.ceil(min); // Ensure min is an integer
-        max = Math.floor(max); // Ensure max is an integer
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
-
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      TweenLite.set('#container', { perspective: 1000 });
-      TweenLite.set('img', { xPercent: '-50%', yPercent: '-50%' });
-
-      let total = 100;
-      let container = document.getElementById('container'),
-        w = window.innerWidth,
-        h = window.innerHeight;
-
-      let leafletLabels = [
-        '4',
-        '6',
-        '14',
-        '30',
-        '32',
-        '40',
-        '71',
-        '93',
-        '115',
-        '123',
-        '124',
-        '136',
-        '139',
-        '140',
-        '145',
-        '155',
-        '160',
-        '165',
-        '168',
-        '173',
-        '177',
-        '181',
-        '189',
-        '194',
-        '201',
-        '212',
-        '220',
-        '257',
-        '258',
-        '265',
-        '282',
-        '286',
-        '292',
-        '305',
-        '308',
-      ];
-
-      for (let i = 0; i < 6; i++) {
-        let img = document.createElement('img');
-        img.id = i;
-        img.classList.add('leafy');
-        let imgContainer = document.createElement('div');
-
-        let randomLeaflet = `public/leaflets/leaflets-sm/dithered/${leafletLabels[Math.floor(Math.random() * leafletLabels.length)]}.png`;
-
-        let tooltip = document.createElement('span');
-
-        imgContainer.className = 'img-container';
-        img.src = randomLeaflet;
-        // img.style
-        img.onclick = (e) => {
-          setCurLeaflet(e.target.dataset.leafletId);
-
-          setLeafletData();
-        };
-        img.style.zIndex = '69';
-        img.style.width = '250px';
-        // img.style.opacity = `${85 + getRandomInt(15)}%`;
-        // img.style.opacity = `100`;
-        // img.style.opacity = '.10';
-        TweenLite.set(img, {
-          attr: { class: 'leaf' },
-          x: R(0, w),
-          y: R(-500, -450),
-          z: R(-200, 200),
+        el.addEventListener('mouseleave', () => {
+          tweens.forEach((t) => t.resume());
+          el.style.outline = 'none';
+          dom.hoverTextContainer.style.visibility = 'hidden';
         });
-
-        imgContainer.appendChild(img);
-
-        container.appendChild(imgContainer);
-        animm(img);
       }
 
-      const imgContainers = document.querySelectorAll('.leaf');
+      // ── Spawn leaves & observe for recycling ───────────────────
+      const leafElements = [];
+      for (let i = 0; i < FALLING_LEAF_COUNT; i++) {
+        leafElements.push(createFallingLeaf());
+      }
 
-      const observer = new IntersectionObserver(
+      const recycleObserver = new IntersectionObserver(
         (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) {
-              let curInputNum =
-                document.getElementById('input').value;
-              if (leafletLabels.includes(curInputNum)) {
-                console.log('🚀 ~ inputNum:', inputNum);
-                entry.target.src = `public/leaflets/leaflets-sm/dithered/${curInputNum}.png`;
-                entry.target.dataset.leafletId = curInputNum;
-              } else {
-                console.log('🚀 ~ nein:');
-                const randomLeafletId =
-                  leafletLabels[
-                    Math.floor(Math.random() * leafletLabels.length)
-                  ];
-                entry.target.src = `public/leaflets/leaflets-sm/dithered/${randomLeafletId}.png`;
-                entry.target.dataset.leafletId = randomLeafletId;
-              }
-            }
-          });
+          for (const entry of entries) {
+            if (entry.isIntersecting) continue;
+
+            const inputValue = dom.input.value;
+            const nextId = LEAFLET_IDS.includes(inputValue)
+              ? inputValue
+              : pickRandomId();
+
+            entry.target.src = thumbPath(nextId);
+            entry.target.dataset.leafletId = nextId;
+          }
         },
         { threshold: 0 },
       );
 
-      imgContainers.forEach((img) => {
-        observer.observe(img);
-      });
-
-      function animm(elm) {
-        const tweens = [
-          TweenMax.to(elm, R(6, 15), {
-            y: h + 100,
-            ease: Linear.easeNone,
-            repeat: -1,
-            delay: 0,
-          }),
-          TweenMax.to(elm, R(4, 8), {
-            x: '+=100',
-            rotationZ: R(0, 60),
-            repeat: -1,
-            yoyo: true,
-            ease: Sine.easeInOut,
-          }),
-          TweenMax.to(elm, R(2, 8), {
-            rotationX: R(0, 180),
-            rotationY: R(0, 90),
-            repeat: -1,
-            yoyo: true,
-            ease: Sine.easeInOut,
-            delay: -5,
-          }),
-        ];
-
-        const hoverTextContainer = document.querySelector(
-          '.hover-text-container',
-        );
-
-        elm.addEventListener('mousemove', () => {
-          if (hoverTextContainer.style.visibility !== 'visible') {
-            // setCurLeaflet();
-            tweens.forEach((t) => t.pause());
-            elm.style.outline = '3px solid #00a606';
-            hoverTextContainer.style.visibility = 'visible';
-          }
-        });
-
-        elm.addEventListener('mouseleave', () => {
-          tweens.forEach((t) => t.resume());
-          elm.style.outline = 'none';
-          document.querySelector(
-            '.hover-text-container',
-          ).style.visibility = 'hidden';
-        });
-      }
-      function R(min, max) {
-        return min + Math.random() * (max - min);
-      }
-
-      let timerID = null;
-      let timeoutDuration = 600000; // 10 minute
-
-      window.addEventListener(
-        'keydown',
-        function (e) {
-          if (timerID !== null) {
-            clearTimeout(timerID);
-            timerID = null;
-          }
-
-          timerID = setTimeout(function () {
-            // Clear all the fields here
-            document.getElementById('input').value = '';
-            inputNum = '';
-          }, timeoutDuration);
-        },
-        false,
-      );
+      leafElements.forEach((img) => recycleObserver.observe(img));
     </script>
   </body>
 </html>
