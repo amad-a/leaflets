@@ -67,7 +67,7 @@
       z-index: 1;
     }
 
-    .hover-text-container {
+    .hover-overlay {
       pointer-events: none;
       visibility: hidden;
       z-index: 999999998;
@@ -85,13 +85,13 @@
       height: 100%;
     }
 
-    .hover-text {
+    .hover-label {
       background-color: black;
       border: 3px solid #00a606;
       padding: 20px 28px;
     }
 
-    .img-container:hover .tooltiptext {
+    .leaf-wrapper:hover .tooltiptext {
       visibility: visible;
     }
 
@@ -138,8 +138,8 @@
       height: 100vh;
       width: 100vw;
       display: flex;
-      z-index: 9999999999;
-      align-items: center;
+      z-index: 99999999;
+      /* align-items: center; */
       justify-content: center;
       background-color: rgb(0, 0, 0, 0.55);
     }
@@ -154,7 +154,7 @@
     }
 
     .leaflet-dialog {
-      height: calc(100vh - 90px);
+      height: calc(100vh - 140px);
       width: calc(100vw - 90px);
       border: 2px solid #00a606;
       background-color: black;
@@ -163,6 +163,7 @@
       align-items: top;
       justify-content: flex-start;
       flex-direction: column;
+      margin-top: 45px;
     }
 
     .leaflet-image-full {
@@ -209,7 +210,7 @@
       height: -webkit-fill-available;
     }
 
-    .meta {
+    .meta-panel {
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -248,7 +249,7 @@
       opacity: 0.75;
     }
 
-    .meta.short {
+    .meta-panel--primary {
       border-right: 2px solid #00a606;
     }
   </style>
@@ -257,7 +258,7 @@
     <div class="input-holder">
       <div>></div>
       <input
-        id="input"
+        id="leaflet-search"
         placeholder="Enter Leaflet #"
         type="text"
         maxlength="3"
@@ -267,8 +268,8 @@
       />
     </div>
 
-    <div class="hover-text-container">
-      <div class="hover-text">Click leaflet to view.</div>
+    <div class="hover-overlay">
+      <div class="hover-label">Click leaflet to view.</div>
     </div>
     <div id="container"></div>
     <div class="dialog-container hidden">
@@ -281,7 +282,7 @@
           <img class="leaflet-image-full" />
         </div>
         <div class="metadata-container">
-          <div class="meta short">
+          <div class="meta-panel meta-panel--primary">
             <div id="operation">
               <span class="meta-title">Operation:</span>
               <span class="meta-content"></span>
@@ -319,7 +320,7 @@
               <span class="meta-content"></span>
             </div>
           </div>
-          <div class="meta long">
+          <div class="meta-panel meta-panel--secondary">
             <div id="translation">
               <span class="meta-title">Translation:</span>
               <span class="meta-content"></span>
@@ -343,7 +344,7 @@
       // ── Constants ──────────────────────────────────────────────
       const FALLING_LEAF_COUNT = 6;
       const LEAF_WIDTH = '250px';
-      const IDLE_TIMEOUT_MS = 600_000; // 10 minutes
+      const IDLE_TIMEOUT_MS = 120_000; // 10 minutes
 
       const LEAFLET_IDS = [
         '4', '6', '14', '30', '32', '40', '71', '93', '115', '123',
@@ -369,14 +370,14 @@
 
       // ── Cached DOM Elements ────────────────────────────────────
       const dom = {
-        container:          document.getElementById('container'),
-        input:              document.getElementById('input'),
-        dialogContainer:    document.querySelector('.dialog-container'),
-        dialogTitle:        document.querySelector('.dialog-header-title'),
-        dialogClose:        document.querySelector('.dialog-header-x'),
-        dialogImage:        document.querySelector('.leaflet-image-full'),
-        hoverTextContainer: document.querySelector('.hover-text-container'),
-        metaPanels:         document.querySelectorAll('.meta'),
+        container:       document.getElementById('container'),
+        input:           document.getElementById('leaflet-search'),
+        dialogContainer: document.querySelector('.dialog-container'),
+        dialogTitle:     document.querySelector('.dialog-header-title'),
+        dialogClose:     document.querySelector('.dialog-header-x'),
+        dialogImage:     document.querySelector('.leaflet-image-full'),
+        hoverOverlay:    document.querySelector('.hover-overlay'),
+        metaPanels:      document.querySelectorAll('.meta-panel'),
       };
 
       // ── State ──────────────────────────────────────────────────
@@ -402,6 +403,7 @@
 
       // ── Dialog ─────────────────────────────────────────────────
       function openDialog(id) {
+        dom.input.value = id;
         const leaflet = leaflets.find((l) => l['catalog-number'] === id);
         if (!leaflet) return;
 
@@ -430,15 +432,20 @@
 
       function closeDialog() {
         dom.dialogContainer.classList.add('hidden');
-        dom.input.value = '';
         currentLeaflet = null;
       }
 
       // ── Dialog Event Listeners ─────────────────────────────────
-      dom.dialogClose.addEventListener('pointerdown', closeDialog);
+      dom.dialogClose.addEventListener('pointerdown', () => {
+        closeDialog();
+        dom.input.value = '';
+      });
 
       dom.dialogContainer.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) closeDialog();
+        if (e.target === e.currentTarget) {
+          closeDialog();
+          dom.input.value = '';
+        }
       });
 
       // ── Input Handling ─────────────────────────────────────────
@@ -449,16 +456,20 @@
         const value = e.target.value;
         if (value && LEAFLET_IDS.includes(value)) {
           openDialog(value);
+        } else {
+          closeDialog();
         }
       });
 
       // ── Idle Timer (clears input after inactivity) ─────────────
-      window.addEventListener('keydown', () => {
+      window.addEventListener('mousemove', () => {
         if (idleTimerId !== null) {
           clearTimeout(idleTimerId);
         }
         idleTimerId = setTimeout(() => {
+          console.log('ple')
           dom.input.value = '';
+          closeDialog();
         }, IDLE_TIMEOUT_MS);
       });
 
@@ -477,6 +488,7 @@
         img.style.width = LEAF_WIDTH;
 
         img.addEventListener('click', (e) => {
+          console.log('CLICK');
           const id = e.target.dataset.leafletId;
           if (id) openDialog(id);
         });
@@ -489,7 +501,7 @@
         });
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'img-container';
+        wrapper.className = 'leaf-wrapper';
         wrapper.appendChild(img);
         dom.container.appendChild(wrapper);
 
@@ -526,17 +538,17 @@
         ];
 
         el.addEventListener('mousemove', () => {
-          if (dom.hoverTextContainer.style.visibility !== 'visible') {
+          if (dom.hoverOverlay.style.visibility !== 'visible') {
             tweens.forEach((t) => t.pause());
             el.style.outline = '3px solid #00a606';
-            dom.hoverTextContainer.style.visibility = 'visible';
+            dom.hoverOverlay.style.visibility = 'visible';
           }
         });
 
         el.addEventListener('mouseleave', () => {
           tweens.forEach((t) => t.resume());
           el.style.outline = 'none';
-          dom.hoverTextContainer.style.visibility = 'hidden';
+          dom.hoverOverlay.style.visibility = 'hidden';
         });
       }
 
